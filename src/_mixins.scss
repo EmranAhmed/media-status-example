@@ -1,0 +1,30 @@
+@mixin variables() {
+	--tooltip-angle: 5px;
+	--tooltip-text-color: #fff;
+	--tooltip-background-color: #333;
+	--tooltip-max-width: 150px;
+	--tooltip-height: 35px;
+	--tooltip-padding: 10px;
+	--tooltip-offset: 5px;
+	--tooltip-edge: 2px;
+	// stylelint-disable-next-line length-zero-no-unit
+	--_tooltip-position: 0px;
+}
+
+
+@mixin init($content-attribute: "data-toggle") {
+
+	[dir="rtl"] & {
+		--_arrow-x: 50%;
+		--_content-x: calc(50% + var(--_tooltip-position));
+	}
+	& {
+		--_arrow-x: -50%;
+		--_content-x: calc(-50% + var(--_tooltip-position));
+
+		position: relative;
+
+		@include variables();
+
+	}
+}

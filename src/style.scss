@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+@use "./mixins" as boilerplate;
+
+$default-font: -apple-system, BlinkMacSystemFont,"Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell,"Helvetica Neue", sans-serif;
+
+button {
+	font-family: $default-font;
+	@include boilerplate.init("data-toggle");
+	&.default{
+		background-color: #760909;
+		color: #fff;
+	}
+	&.toggle{
+		background-color: #1a852f;
+	}
+}

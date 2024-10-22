@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Boilerplate</title>
+
+	<style>
+
+		.main-slider{
+			width: 800px;
+			display: block;
+			aspect-ratio: 16 / 9;
+			margin: 0 auto;
+			background-color: #333333;
+		}
+
+		.main-slider iframe,
+		.main-slider video{
+			width: 800px;
+			display: block;
+			aspect-ratio: 16 / 9;
+		}
+	</style>
+	<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+	<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+
+</head>
+
+<body>
+
+<div class="main-slider" id="main-slider">
+			<div>
+				<div class="video-wrapper">
+					<iframe class="background" loading="lazy" src="https://player.vimeo.com/video/76979871?background=1&api=1" frameborder="0" allowfullscreen></iframe>
+				</div>
+			</div>
+
+			<div>
+				<div class="video-wrapper">
+					<iframe loading="lazy" src="https://www.youtube.com/embed/a3ICNMQW7Ok?v=a3ICNMQW7Ok&feature=oembed&enablejsapi=1&controls=0" frameborder="0" allowfullscreen></iframe>
+				</div>
+			</div>
+
+			<div>
+				<div class="video-wrapper">
+					<video preload="auto" controls="" controlslist="nodownload" src="https://media.w3.org/2010/05/sintel/trailer.mp4"></video>
+				</div>
+			</div>
+
+			<div>
+				<div class="video-wrapper">
+					<iframe src="https://player.vimeo.com/video/1007718657?background=0&api=1" frameborder="0" allowfullscreen></iframe>
+				</div>
+			</div>
+		</div>
+
+
+
+<button id="pause">Pause</button>
+<button id="play">Play</button>
+
+
+<script type="text/javascript" src="//www.youtube.com/iframe_api"></script>
+<script type="text/javascript" src="//player.vimeo.com/api/player.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+<script type="text/javascript">
+
+
+/*	$('#main-slider').on('beforeChange', function(event, slick, currentSlide, nextSlide){
+		$('.yt-player').each(function(){
+			this.contentWindow.postMessage('{"event":"command","func":"' + 'pauseVideo' + '","args":""}', '*')
+		});
+	});*/
+
+	// WP $embed_code = wp_oembed_get( 'http://www.youtube.com/watch?v=AbcDeFg123' );
+
+	// When play do not auto slide.
+
+	const YTCMD = { 'event': 'command', 'func': 'pauseVideo', 'args': '' };
+	const VMO_PAUSE = { 'method': 'pause', 'value': 'true' };
+	const VMO_PLAY = { 'method': 'play', 'value': 'true' };
+
+	function pauseAll () {
+		const videos = document.querySelectorAll('iframe.background[src*="vimeo"]');
+
+		videos.forEach((element) => {
+				element?.contentWindow.postMessage(JSON.stringify(VMO_PAUSE), '*');
+		});
+	}
+
+	function playAll () {
+		const videos = document.querySelectorAll('iframe.background[src*="vimeo"]');
+
+		videos.forEach((element) => {
+				element?.contentWindow.postMessage(JSON.stringify(VMO_PLAY), '*');
+		});
+	}
+
+
+	document.getElementById('pause').addEventListener('click', () => {
+		pauseAll();
+	});
+	document.getElementById('play').addEventListener('click', () => {
+		playAll();
+	});
+
+	// document.dispatchEvent(new Event('playSlide'));
+	// document.dispatchEvent(new Event('pauseSlide'));
+
+	let time;
+
+	function start () {
+		clearInterval(time);
+		time = setInterval(()=>{
+			console.count('Running Slider...');
+		}, 2000);
+	}
+
+	function stop () {
+		console.countReset('Running Slider...');
+		clearInterval(time);
+		console.log('clear...');
+	}
+
+	// start()
+
+	document.addEventListener('pauseSlide', ()=>{
+		// stop()
+
+		console.log('video play')
+		$('#main-slider').slick('slickPause');
+	})
+
+	document.addEventListener('playSlide', ()=>{
+		// start()
+		console.log('video paused')
+		$('#main-slider').slick('slickPlay');
+	})
+
+
+	// Auto RUN From YouTubeIframeAPI
+	function onYouTubeIframeAPIReady () {
+		const videos = document.querySelectorAll('.main-slider iframe[src*="youtube.com"]');
+		videos.forEach(($element) => {
+			new YT.Player($element, {
+				events: {
+					onStateChange: (event) => {
+						if (event.data === YT.PlayerState.PLAYING) {
+							document.dispatchEvent(new Event('pauseSlide'));
+						} else {
+							document.dispatchEvent(new Event('playSlide'));
+						}
+					},
+				},
+			});
+		});
+	}
+
+	function onHTML5VideoReady () {
+		const videos = document.querySelectorAll('.main-slider video');
+
+		videos.forEach(($element) => {
+			// Pause event
+
+			$element.addEventListener("pause", function() {
+				document.dispatchEvent(new Event('playSlide'));
+			});
+			$element.addEventListener("ended", function() {
+				document.dispatchEvent(new Event('playSlide'));
+			});
+			$element.addEventListener("playing", function() {
+				document.dispatchEvent(new Event('pauseSlide'));
+			});
+		});
+	}
+
+	function onVimeoVideoReady () {
+		const videos = document.querySelectorAll('.main-slider iframe[src*="vimeo.com"]');
+
+		videos.forEach(($element) => {
+
+			const player = new Vimeo.Player($element);
+			// Pause event
+
+			player.on("pause", function() {
+				document.dispatchEvent(new Event('playSlide'));
+			});
+			player.on("ended", function() {
+				document.dispatchEvent(new Event('playSlide'));
+			});
+			player.on("playing", function() {
+				document.dispatchEvent(new Event('pauseSlide'));
+			});
+		});
+	}
+
+
+
+
+$(function() {
+	$('#main-slider').slick({
+		slidesToShow: 1,
+		slidesToScroll: 1,
+		autoplay: true,
+		autoplaySpeed: 3000,
+		pauseOnFocus: false,
+		pauseOnHover: false,
+		dots: true,
+		infinite: true,
+		adaptiveHeight: false,
+		arrows: false
+	});
+
+	onHTML5VideoReady();
+	onVimeoVideoReady();
+
+});
+</script>
+
+</body>
+
+</html>
